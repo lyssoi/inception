@@ -1,0 +1,33 @@
+# 베이스 이미지 설정
+FROM debian:bullseye
+
+EXPOSE 9000
+
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y curl \
+    mariadb-client \
+    php7.4-fpm \
+    php-mysql \
+	php-cgi \
+	php-pdo \
+	php-gd \
+	php-cli \
+	php-mbstring \
+    vim \
+    dumb-init
+
+COPY ./tools ./tools
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+    chmod +x wp-cli.phar && \
+    mv wp-cli.phar /usr/local/bin/wp && \
+    mkdir -p /var/www/html /run/php && \
+    groupadd wordpress && \
+    useradd -g wordpress wordpress && \
+    chown -R wordpress:wordpress /var/www/ && \
+    chmod +x ./tools/wordpress.sh
+
+COPY ./conf/www.conf /etc/php/7.4/fpm/pool.d/www.conf
+
+WORKDIR /var/www/html
+ENTRYPOINT ["dumb-init", "--", "/tools/wordpress.sh"]

@@ -1,0 +1,17 @@
+FROM debian:bullseye
+
+EXPOSE 3306
+
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y mariadb-server \
+	vim \
+	mariadb-client \
+	dumb-init
+
+COPY ./tools ./tools
+COPY ./conf/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf
+
+RUN chmod +x ./tools/mariadb.sh
+
+ENTRYPOINT ["dumb-init", "--", "./tools/mariadb.sh"]

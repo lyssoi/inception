@@ -1,0 +1,56 @@
+#version: '3.8'
+
+volumes: #정의한 볼륨 이름은 data이다. 해당 볼륨은 Docker에서 관리한다.
+  mariadb-volume:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ~/soljeong/data/mariadb
+  wordpress-volume:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ~/soljeong/data/wordpress
+services: #Docker compose에서 실행할 서비스를 정의, 각 서비스는 개별적으로 컨테이너로 실행
+  mariadb:
+      image: mariadb
+      build: ./requirements/mariadb/.
+      restart: always
+      expose:
+        - "3306"
+      networks:
+        - intra
+      volumes:
+        - mariadb-volume:/var/lib/mysql
+      tty: true
+      env_file:
+        - .env
+  nginx: # nginx라는 이름의 서비스를 정의
+    image: nginx #debian:buster 이미지를 기반으로 컨테이너 생성
+    restart : always #컨테이너가 중지되더라도 항상 다시 시작하도록 설정
+    build : ./requirements/nginx/. 
+    ports:
+      - "443:443" # 호스트의 443 포트를 컨테이너의 443 포트로 매핑
+    volumes:
+      - wordpress-volume:/var/www/html # data볼륨을 'var/www/html' 디렉토리에 마운트
+    networks:
+      - intra # intra 네트워크에 연결
+    tty: true # 컨테이너에 가상 터미널 할당
+  wordpress:
+        image: wordpress
+        restart: always
+        build : ./requirements/wordpress/. 
+        volumes:
+            - wordpress-volume:/var/www/html
+        expose: 
+            - "9000"
+        networks:
+            - intra
+        tty: true
+        env_file:
+          - .env
+networks:
+  intra : #'intra'라는 이름의 네트워크를 정의
+    driver: bridge # 이 네트워크는 브리지 네트워크 드라이버를 사용하여 생성, 브리지 네트워크는 동일한 Docker 호스트 내의 컨테이너들이 상호 연결되도록 함 
