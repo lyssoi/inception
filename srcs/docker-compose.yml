@@ -6,13 +6,13 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ~/soljeong/data/mariadb
+      device: /home/soljeong/data/mariadb
   wordpress-volume:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ~/soljeong/data/wordpress
+      device: /home/soljeong/data/wordpress
 services: 
   mariadb:
       image: mariadb
@@ -21,7 +21,7 @@ services:
       expose:
         - "3306"
       networks:
-        - intra
+        - inception
       volumes:
         - mariadb-volume:/var/lib/mysql
       tty: true
@@ -36,7 +36,7 @@ services:
     volumes:
       - wordpress-volume:/var/www/html
     networks:
-      - intra 
+      - inception 
     tty: true 
   wordpress:
         image: wordpress
@@ -47,10 +47,10 @@ services:
         expose: 
             - "9000"
         networks:
-            - intra
+            - inception
         tty: true
         env_file:
           - .env
 networks:
-  intra : 
+  inception : 
     driver: bridge 
