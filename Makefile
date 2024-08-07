@@ -3,7 +3,9 @@ DATA_DIR = /home/soljeong/data
 
 all :
 	mkdir -p $(DATA_DIR)/wordpress
+	chomd +x $(DATA_DIR)/wordpress
 	mkdir -p $(DATA_DIR)/mariadb
+	chomd +x $(DATA_DIR)/mariadb
 	docker compose -f $(COMPOSE_FILE) up -d --build
 
 down :
